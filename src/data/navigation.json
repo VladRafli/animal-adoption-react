@@ -1,0 +1,20 @@
+{
+    "data": [
+        {
+            "label": "Dashboard",
+            "to": "/dashboard"
+        },
+        {
+            "label": "Manage Users",
+            "to": "/users"
+        },
+        {
+            "label": "Manage Animals",
+            "to": "/animals"
+        },
+        {
+            "label": "Manage Adapt List",
+            "to": "/adoptions"
+        }
+    ]
+}
