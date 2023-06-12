@@ -1,8 +1,28 @@
 import DashboardLayout from '@/layouts/DashboardLayout'
 import { Box, Grid, Stack, Typography } from '@mui/joy'
+import { useEffect } from 'react'
 import Chart from 'react-apexcharts'
+import { useNavigate } from 'react-router-dom'
+import wretch from 'wretch'
 
 export default function Home() {
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    wretch(`${import.meta.env.VITE_API_URL}/v1/auth/isloggedin`)
+      .options({
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+        },
+        mode: 'cors',
+      })
+      .get()
+      .unauthorized(() => {
+        alert('You are logged out. Login again to continue access the web.')
+        navigate('/auth/login')
+      })
+  }, [])
+
   return (
     <DashboardLayout>
       <Stack spacing={2}>
@@ -18,9 +38,11 @@ export default function Home() {
                   border: `solid 1px ${theme.palette.neutral[200]}`,
                 })}
               >
-                <Box sx={{
-                  padding: '1rem'
-                }}>
+                <Box
+                  sx={{
+                    padding: '1rem',
+                  }}
+                >
                   <Typography
                     level='body1'
                     sx={(theme) => ({
@@ -69,15 +91,17 @@ export default function Home() {
               </Box>
             </Grid>
             <Grid xs={3}>
-            <Box
+              <Box
                 sx={(theme) => ({
                   backgroundColor: theme.palette.neutral[50],
                   border: `solid 1px ${theme.palette.neutral[200]}`,
                 })}
               >
-                <Box sx={{
-                  padding: '1rem'
-                }}>
+                <Box
+                  sx={{
+                    padding: '1rem',
+                  }}
+                >
                   <Typography
                     level='body1'
                     sx={(theme) => ({
@@ -126,15 +150,17 @@ export default function Home() {
               </Box>
             </Grid>
             <Grid xs={3}>
-            <Box
+              <Box
                 sx={(theme) => ({
                   backgroundColor: theme.palette.neutral[50],
                   border: `solid 1px ${theme.palette.neutral[200]}`,
                 })}
               >
-                <Box sx={{
-                  padding: '1rem'
-                }}>
+                <Box
+                  sx={{
+                    padding: '1rem',
+                  }}
+                >
                   <Typography
                     level='body1'
                     sx={(theme) => ({
@@ -183,15 +209,17 @@ export default function Home() {
               </Box>
             </Grid>
             <Grid xs={3}>
-            <Box
+              <Box
                 sx={(theme) => ({
                   backgroundColor: theme.palette.neutral[50],
                   border: `solid 1px ${theme.palette.neutral[200]}`,
                 })}
               >
-                <Box sx={{
-                  padding: '1rem'
-                }}>
+                <Box
+                  sx={{
+                    padding: '1rem',
+                  }}
+                >
                   <Typography
                     level='body1'
                     sx={(theme) => ({
