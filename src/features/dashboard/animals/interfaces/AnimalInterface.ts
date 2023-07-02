@@ -6,5 +6,5 @@ export default interface AnimalInterface {
   type: string
   breed: string
   description: string
-  image: string
+  image: any
 }

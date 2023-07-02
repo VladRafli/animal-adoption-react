@@ -1,12 +1,20 @@
+import { userAtom } from '@/data/user'
 import DashboardLayout from '@/layouts/DashboardLayout'
 import { faker } from '@faker-js/faker'
 import {
-  AspectRatio, Box,
-  Button, Card,
-  Grid, Input, Modal,
+  AspectRatio,
+  Box,
+  Button,
+  Card,
+  Grid,
+  Input,
+  Modal,
   ModalClose,
-  ModalDialog, Textarea, Typography
+  ModalDialog,
+  Textarea,
+  Typography,
 } from '@mui/joy'
+import { useAtom } from 'jotai'
 import { useEffect, useReducer, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import wretch from 'wretch'
@@ -15,13 +23,15 @@ import AnimalInterface from './interfaces/AnimalInterface'
 export default function Animals() {
   const navigate = useNavigate()
 
-  // const [data, setData] = useState<AnimalInterface[]>([])
-  const [data, updateData] = useReducer(
-    (prev: AnimalInterface[], next: AnimalInterface) => {
-      return [...prev, next]
-    },
-    []
-  )
+  const [user] = useAtom(userAtom)
+
+  const [data, setData] = useState<AnimalInterface[]>([])
+  // const [data, updateData] = useReducer(
+  //   (prev: AnimalInterface[], next: AnimalInterface) => {
+  //     return [...prev, next]
+  //   },
+  //   []
+  // )
   // const [detail, setDetail] = useState({ isOpen: false, id: '' })
   const [detail, updateDetail] = useReducer(
     (
@@ -55,20 +65,57 @@ export default function Animals() {
         navigate('/auth/login')
       })
 
-    Array.from({ length: 10 }).forEach(() => {
-      const animalType = ['cat', 'dog'][faker.number.int({ min: 0, max: 1 })]
-
-      updateData({
-        id: faker.string.uuid(),
-        name: faker.animal.dog(),
-        age: faker.number.int({ min: 0, max: 1 }),
-        gender: faker.person.sex(),
-        type: animalType,
-        breed: animalType === 'cat' ? faker.animal.cat() : faker.animal.dog(),
-        description: faker.lorem.paragraph(),
-        image: faker.image.urlLoremFlickr({ category: 'animals' }),
-      })
-    })
+    if (user.role === 'admin') {
+      wretch(`${import.meta.env.VITE_API_URL}/v1/animal`)
+        .options({
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+          },
+          mode: 'cors',
+        })
+        .get()
+        .json((res) => {
+          setData(
+            res.data.map((animal: any) => ({
+              id: animal.id,
+              name: animal.name,
+              age: animal.age,
+              gender: animal.gender,
+              type: animal.animalType.name,
+              breed: animal.breed,
+              description: animal.description,
+              image: animal.animalPhoto.find(
+                (val: any) => val.type === 'fullBody'
+              ),
+            }))
+          )
+        })
+    } else {
+      wretch(`${import.meta.env.VITE_API_URL}/v1/animal?shelter=true`)
+        .options({
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+          },
+          mode: 'cors',
+        })
+        .get()
+        .json((res) => {
+          setData(
+            res.data.map((animal: any) => ({
+              id: animal.id,
+              name: animal.name,
+              age: animal.age,
+              gender: animal.gender,
+              type: animal.animalType.name,
+              breed: animal.breed,
+              description: animal.description,
+              image: animal.animalPhoto.find(
+                (val: any) => val.type === 'fullBody'
+              ),
+            }))
+          )
+        })
+    }
   }, [])
 
   useEffect(() => {
@@ -78,6 +125,52 @@ export default function Animals() {
       updateDetailData(animal)
     }
   }, [detail.id, data])
+
+  const handleUpdate = (id: string) => {
+    const animal = data.find((animal) => animal.id === id)
+
+    if (animal) {
+      wretch(`${import.meta.env.VITE_API_URL}/v1/animal/${id}`)
+        .options({
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+          },
+          mode: 'cors',
+        })
+        .put({
+          name: detailData.name,
+          age: detailData.age,
+          gender: detailData.gender,
+          breed: detailData.breed,
+          description: detailData.description,
+        })
+
+      wretch(`${import.meta.env.VITE_API_URL}/v1/animal`)
+        .options({
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+          },
+          mode: 'cors',
+        })
+        .get()
+        .json((res) => {
+          setData(
+            res.data.map((animal: any) => ({
+              id: animal.id,
+              name: animal.name,
+              age: animal.age,
+              gender: animal.gender,
+              type: animal.animalType.name,
+              breed: animal.breed,
+              description: animal.description,
+              image: animal.animalPhoto.find(
+                (val: any) => val.type === 'fullBody'
+              ),
+            }))
+          )
+        })
+    }
+  }
 
   return (
     <DashboardLayout>
@@ -91,13 +184,24 @@ export default function Animals() {
       </Typography>
       <Grid container spacing={2}>
         {data.map((animal, index) => (
-          <Grid xs={4} key={animal.id}>
+          <Grid xs={6} key={index}>
             <Card variant='outlined'>
-              <img
-                src={animal.image}
-                alt={animal.name}
-                style={{ marginBottom: '1rem', borderRadius: '1rem' }}
-              />
+              <AspectRatio
+                objectFit='contain'
+                sx={{
+                  width: '360px',
+                  marginBottom: '1rem',
+                }}
+              >
+                <img
+                  src={animal.image !== undefined ? animal.image.path : ''}
+                  alt={animal.name}
+                  style={{
+                    marginBottom: '1rem',
+                    borderRadius: '1rem',
+                  }}
+                />
+              </AspectRatio>
               <Typography
                 sx={{
                   marginBottom: '1rem',
@@ -127,6 +231,7 @@ export default function Animals() {
         >
           <ModalClose
             onClick={() => {
+              setIsDetailEdited(false)
               updateDetailData({})
               updateDetail({ isOpen: false, id: '' })
             }}
@@ -145,8 +250,21 @@ export default function Animals() {
               marginBottom: '1rem',
             }}
           >
-            <img src={detailData.image} alt={detailData.name} />
+            <img
+              src={detailData.image !== undefined ? detailData.image.path : ''}
+              alt={detailData.name}
+            />
           </AspectRatio>
+          <Box>
+            <label htmlFor='age'>Name</label>
+            <Input
+              variant='outlined'
+              id='name'
+              value={detailData.name}
+              onChange={(e) => updateDetailData({ name: e.target.value })}
+              disabled={!isDetailEdited}
+            />
+          </Box>
           <Box>
             <label htmlFor='age'>Age</label>
             <Input
@@ -203,7 +321,10 @@ export default function Animals() {
           {isDetailEdited ? (
             <Button
               variant='solid'
-              onClick={() => setIsDetailEdited(false)}
+              onClick={() => {
+                setIsDetailEdited(false)
+                handleUpdate(detail.id)
+              }}
               sx={{
                 marginTop: '1rem',
               }}

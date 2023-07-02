@@ -85,12 +85,12 @@ export default function DashboardLayout(props: any) {
   }, [])
 
   const handleLogout = () => {
-    localStorage.removeItem('access_token')
-    localStorage.removeItem('refresh_token')
     setLogoutModal(true)
   }
 
   const handleLogoutModal = () => {
+    localStorage.removeItem('access_token')
+    localStorage.removeItem('refresh_token')
     setLogoutModal(false)
     navigate('/auth/login')
   }

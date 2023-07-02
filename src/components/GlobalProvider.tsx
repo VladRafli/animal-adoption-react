@@ -7,7 +7,7 @@ import {
   Experimental_CssVarsProvider as MaterialCssVarsProvider,
   experimental_extendTheme as materialExtendTheme,
   THEME_ID,
-} from '@mui/material'
+} from '@mui/material/styles'
 import { QueryClientProvider, QueryClient } from '@tanstack/react-query'
 import { ReactNode } from 'react'
 
