@@ -358,7 +358,7 @@ export default function Home() {
                         Total Animal
                       </Typography>
                       <Typography level='h4'>
-                        {10}
+                        {0}
                       </Typography>
                     </Box>
                     <Chart
@@ -420,7 +420,7 @@ export default function Home() {
                         Total Adopted Animal
                       </Typography>
                       <Typography level='h4'>
-                        {2}
+                        {0}
                       </Typography>
                     </Box>
                     <Chart

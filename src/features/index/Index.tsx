@@ -52,7 +52,7 @@ export default function Index() {
             }}>Are you want to adopt an animal?</Typography>
             <Button
               onClick={() => {
-                alert('This should download the app.')
+                window.location = 'https://animaladoptions3.s3.ap-southeast-1.amazonaws.com/adoptme-latest.apk'
               }}
             >
               Download our app here <ArrowForward />
