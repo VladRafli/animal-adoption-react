@@ -3,11 +3,24 @@ import { Box, Button, Grid, Input, Link, Stack, Typography } from '@mui/joy'
 import { useState } from 'react'
 import { Link as RouterLink } from 'react-router-dom'
 import ForgotPasswordInterface from './interfaces/ForgotPasswordInterface'
+import wretch from 'wretch'
 
 export default function ForgotPassword() {
   const [form, setForm] = useState<ForgotPasswordInterface>({
     email: '',
   })
+
+  const handleSubmit = () => {
+    wretch(`${import.meta.env.VITE_API_URL}/v1/auth/forgot-password`)
+      .options({
+        headers: { 'Content-Type': 'application/json' },
+        mode: 'cors',
+      })
+      .post(form)
+      .json((res) => {
+        alert('Recovery link has been sent to your email.')
+      })
+  }
 
   return (
     <>
@@ -55,7 +68,7 @@ export default function ForgotPassword() {
                 placeholder='Email'
                 startDecorator={<Mail />}
               />
-              <Button color='primary' variant='solid'>
+              <Button color='primary' variant='solid' onClick={handleSubmit}>
                 Submit
               </Button>
               <Typography>
