@@ -60,8 +60,26 @@ export default function DashboardLayout(props: any) {
       })
       .get()
       .unauthorized(() => {
-        alert('You are logged out. Login again to continue access the web.')
-        navigate('/auth/login')
+        wretch(`${import.meta.env.VITE_API_URL}/v1/auth/refresh_token`)
+          .options({
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+            },
+            mode: 'cors',
+          })
+          .post()
+          .unauthorized(() => {
+            localStorage.removeItem('access_token')
+            localStorage.removeItem('refresh_token')
+            alert(
+              'You are logged out. Login again to continue access the web.'
+            )
+            navigate('/auth/login')
+          })
+          .json((res) => {
+            localStorage.setItem('access_token', res.data.access_token)
+            localStorage.setItem('refresh_token', res.data.refresh_token)
+          })
       })
 
     wretch(`${import.meta.env.VITE_API_URL}/v1/users/${userId}`)

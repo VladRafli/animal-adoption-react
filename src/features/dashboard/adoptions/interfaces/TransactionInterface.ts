@@ -1,5 +1,6 @@
 export default interface AdoptionInterface {
     id: string;
+    userId: string;
     name: string;
     number: string;
     animalName: string;

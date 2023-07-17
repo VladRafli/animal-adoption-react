@@ -26,23 +26,16 @@ export default function Animals() {
   const [user] = useAtom(userAtom)
 
   const [data, setData] = useState<AnimalInterface[]>([])
-  // const [data, updateData] = useReducer(
-  //   (prev: AnimalInterface[], next: AnimalInterface) => {
-  //     return [...prev, next]
-  //   },
-  //   []
-  // )
-  // const [detail, setDetail] = useState({ isOpen: false, id: '' })
-  const [detail, updateDetail] = useReducer(
-    (
-      prev: { isOpen: boolean; id: string },
-      next: { isOpen: boolean; id: string }
-    ) => {
+  const [currentAnimalId, setCurrentAnimalId] = useState('')
+  const [detail, setDetail] = useState(false)
+  const [detailPhoto, setDetailPhoto] = useState(false)
+  const [detailCertificate, setDetailCertificate] = useState(false)
+  const [tempDetailData, updateTempDetailData] = useReducer(
+    (prev: Partial<AnimalInterface>, next: Partial<AnimalInterface>) => {
       return { ...prev, ...next }
     },
-    { isOpen: false, id: '' }
+    {}
   )
-  // const [detailData, setDetailData] = useState<AnimalInterface>()
   const [detailData, updateDetailData] = useReducer(
     (prev: Partial<AnimalInterface>, next: Partial<AnimalInterface>) => {
       return { ...prev, ...next }
@@ -87,6 +80,8 @@ export default function Animals() {
               image: animal.animalPhoto.find(
                 (val: any) => val.type === 'fullBody'
               ),
+              photos: animal.animalPhoto,
+              certificates: animal.animalCertificate,
             }))
           )
         })
@@ -112,6 +107,8 @@ export default function Animals() {
               image: animal.animalPhoto.find(
                 (val: any) => val.type === 'fullBody'
               ),
+              photos: animal.animalPhoto,
+              certificates: animal.animalCertificate,
             }))
           )
         })
@@ -119,12 +116,12 @@ export default function Animals() {
   }, [])
 
   useEffect(() => {
-    const animal = data.find((animal) => animal.id === detail.id)
+    const animal = data.find((animal) => animal.id === currentAnimalId)
 
-    if (detail.id && animal) {
+    if (currentAnimalId && animal) {
       updateDetailData(animal)
     }
-  }, [detail.id, data])
+  }, [currentAnimalId, data])
 
   const handleUpdate = (id: string) => {
     const animal = data.find((animal) => animal.id === id)
@@ -213,7 +210,10 @@ export default function Animals() {
               </Typography>
               <Button
                 variant='solid'
-                onClick={() => updateDetail({ isOpen: true, id: animal.id })}
+                onClick={() => {
+                  setCurrentAnimalId(animal.id)
+                  setDetail(true)
+                }}
               >
                 Details
               </Button>
@@ -221,7 +221,7 @@ export default function Animals() {
           </Grid>
         ))}
       </Grid>
-      <Modal open={detail.isOpen}>
+      <Modal open={detail}>
         <ModalDialog
           sx={{
             width: 'calc(2 / 3 * 100vw)',
@@ -233,7 +233,7 @@ export default function Animals() {
             onClick={() => {
               setIsDetailEdited(false)
               updateDetailData({})
-              updateDetail({ isOpen: false, id: '' })
+              setDetail(false)
             }}
           />
           <Typography
@@ -255,6 +255,34 @@ export default function Animals() {
               alt={detailData.name}
             />
           </AspectRatio>
+          <Grid container spacing={2}>
+            <Grid xs={6}>
+              <Button
+                sx={{
+                  width: '100%',
+                }}
+                onClick={() => {
+                  setDetail(false)
+                  setDetailPhoto(true)
+                }}
+              >
+                See all photo
+              </Button>
+            </Grid>
+            <Grid xs={6}>
+              <Button
+                sx={{
+                  width: '100%',
+                }}
+                onClick={() => {
+                  setDetail(false)
+                  setDetailCertificate(true)
+                }}
+              >
+                See all certificates
+              </Button>
+            </Grid>
+          </Grid>
           <Box>
             <label htmlFor='age'>Name</label>
             <Input
@@ -319,22 +347,41 @@ export default function Animals() {
             />
           </Box>
           {isDetailEdited ? (
-            <Button
-              variant='solid'
-              onClick={() => {
-                setIsDetailEdited(false)
-                handleUpdate(detail.id)
-              }}
-              sx={{
-                marginTop: '1rem',
-              }}
-            >
-              Save
-            </Button>
+            <>
+              <Button
+                variant='solid'
+                onClick={() => {
+                  setIsDetailEdited(false)
+                  handleUpdate(currentAnimalId)
+                }}
+                sx={{
+                  marginTop: '1rem',
+                }}
+              >
+                Save
+              </Button>
+              <Button
+                variant='solid'
+                color='danger'
+                onClick={() => {
+                  updateDetailData(tempDetailData)
+                  updateTempDetailData({})
+                  setIsDetailEdited(false)
+                }}
+                sx={{
+                  marginTop: '1rem',
+                }}
+              >
+                Cancel
+              </Button>
+            </>
           ) : (
             <Button
               variant='solid'
-              onClick={() => setIsDetailEdited(true)}
+              onClick={() => {
+                updateTempDetailData(detailData)
+                setIsDetailEdited(true)
+              }}
               sx={{
                 marginTop: '1rem',
               }}
@@ -342,6 +389,278 @@ export default function Animals() {
               Edit
             </Button>
           )}
+        </ModalDialog>
+      </Modal>
+      <Modal open={detailPhoto}>
+        <ModalDialog
+          sx={{
+            width: 'calc(2 / 3 * 100vw)',
+            height: 'calc(100vh - calc(2 * 1rem))',
+            overflowY: 'scroll',
+          }}
+        >
+          <ModalClose
+            onClick={() => {
+              setDetail(true)
+              setDetailPhoto(false)
+            }}
+          />
+          <Typography
+            level='h1'
+            sx={{
+              marginBottom: '1rem',
+            }}
+          >
+            Animal Photos
+          </Typography>
+          <Typography color='danger'>
+            * photo can only be edited via mobile app
+          </Typography>
+          <Box>
+            <Typography level='h3'>Full Body</Typography>
+            <AspectRatio
+              objectFit='contain'
+              sx={{
+                marginBottom: '1rem',
+              }}
+            >
+              <img
+                src={
+                  detailData.photos?.find((val) => val.type === 'fullBody') !==
+                  undefined
+                    ? detailData.photos?.find((val) => val.type === 'fullBody')
+                    : ''
+                }
+                alt='full body'
+              />
+            </AspectRatio>
+          </Box>
+          <Box>
+            <Typography level='h3'>Head</Typography>
+            <AspectRatio
+              objectFit='contain'
+              sx={{
+                marginBottom: '1rem',
+              }}
+            >
+              <img
+                src={
+                  detailData.photos?.find((val) => val.type === 'head') !==
+                  undefined
+                    ? detailData.photos?.find((val) => val.type === 'head')
+                    : ''
+                }
+                alt='head'
+              />
+            </AspectRatio>
+          </Box>
+          <Box>
+            <Typography level='h3'>Left Ear</Typography>
+            <AspectRatio
+              objectFit='contain'
+              sx={{
+                marginBottom: '1rem',
+              }}
+            >
+              <img
+                src={
+                  detailData.photos?.find((val) => val.type === 'leftEar') !==
+                  undefined
+                    ? detailData.photos?.find((val) => val.type === 'leftEar')
+                    : ''
+                }
+                alt='left ear'
+              />
+            </AspectRatio>
+          </Box>
+          <Box>
+            <Typography level='h3'>Right Ear</Typography>
+            <AspectRatio
+              objectFit='contain'
+              sx={{
+                marginBottom: '1rem',
+              }}
+            >
+              <img
+                src={
+                  detailData.photos?.find((val) => val.type === 'rightEar') !==
+                  undefined
+                    ? detailData.photos?.find((val) => val.type === 'rightEar')
+                    : ''
+                }
+                alt='right ear'
+              />
+            </AspectRatio>
+          </Box>
+          <Box>
+            <Typography level='h3'>Body</Typography>
+            <AspectRatio
+              objectFit='contain'
+              sx={{
+                marginBottom: '1rem',
+              }}
+            >
+              <img
+                src={
+                  detailData.photos?.find((val) => val.type === 'body') !==
+                  undefined
+                    ? detailData.photos?.find((val) => val.type === 'body')
+                    : ''
+                }
+                alt='body'
+              />
+            </AspectRatio>
+          </Box>
+          <Box>
+            <Typography level='h3'>Tail</Typography>
+            <AspectRatio
+              objectFit='contain'
+              sx={{
+                marginBottom: '1rem',
+              }}
+            >
+              <img
+                src={
+                  detailData.photos?.find((val) => val.type === 'tail') !==
+                  undefined
+                    ? detailData.photos?.find((val) => val.type === 'tail')
+                    : ''
+                }
+                alt='tail'
+              />
+            </AspectRatio>
+          </Box>
+          <Box>
+            <Typography level='h3'>Front Left Feet</Typography>
+            <AspectRatio
+              objectFit='contain'
+              sx={{
+                marginBottom: '1rem',
+              }}
+            >
+              <img
+                src={
+                  detailData.photos?.find(
+                    (val) => val.type === 'frontLeftFeet'
+                  ) !== undefined
+                    ? detailData.photos?.find(
+                        (val) => val.type === 'frontLeftFeet'
+                      )
+                    : ''
+                }
+                alt='frontLeftFeet'
+              />
+            </AspectRatio>
+          </Box>
+          <Box>
+            <Typography level='h3'>Front Right Feet</Typography>
+            <AspectRatio
+              objectFit='contain'
+              sx={{
+                marginBottom: '1rem',
+              }}
+            >
+              <img
+                src={
+                  detailData.photos?.find(
+                    (val) => val.type === 'frontRightFeet'
+                  ) !== undefined
+                    ? detailData.photos?.find(
+                        (val) => val.type === 'frontRightFeet'
+                      )
+                    : ''
+                }
+                alt='frontRightFeet'
+              />
+            </AspectRatio>
+          </Box>
+          <Box>
+            <Typography level='h3'>Back Left Feet</Typography>
+            <AspectRatio
+              objectFit='contain'
+              sx={{
+                marginBottom: '1rem',
+              }}
+            >
+              <img
+                src={
+                  detailData.photos?.find(
+                    (val) => val.type === 'backLeftFeet'
+                  ) !== undefined
+                    ? detailData.photos?.find(
+                        (val) => val.type === 'backLeftFeet'
+                      )
+                    : ''
+                }
+                alt='backLeftFeet'
+              />
+            </AspectRatio>
+          </Box>
+          <Box>
+            <Typography level='h3'>Back Right Feet</Typography>
+            <AspectRatio
+              objectFit='contain'
+              sx={{
+                marginBottom: '1rem',
+              }}
+            >
+              <img
+                src={
+                  detailData.photos?.find(
+                    (val) => val.type === 'backRightFeet'
+                  ) !== undefined
+                    ? detailData.photos?.find(
+                        (val) => val.type === 'backRightFeet'
+                      )
+                    : ''
+                }
+                alt='backRightFeet'
+              />
+            </AspectRatio>
+          </Box>
+        </ModalDialog>
+      </Modal>
+      <Modal open={detailCertificate}>
+        <ModalDialog
+          sx={{
+            width: 'calc(2 / 3 * 100vw)',
+            height: 'calc(100vh - calc(2 * 1rem))',
+            overflowY: 'scroll',
+          }}
+        >
+          <ModalClose
+            onClick={() => {
+              setDetail(true)
+              setDetailCertificate(false)
+            }}
+          />
+          <Typography
+            level='h1'
+            sx={{
+              marginBottom: '1rem',
+            }}
+          >
+            Animal Certificates
+          </Typography>
+          {detailData.certificates === undefined ? '' : 'No certificate uploaded'}
+          {detailData.certificates?.map((certificate, index) => (
+            <Box key={index}>
+              <Typography level='h3'>Back Right Feet</Typography>
+              <AspectRatio
+                objectFit='contain'
+                sx={{
+                  marginBottom: '1rem',
+                }}
+              >
+                <img
+                  src={
+                    certificate.path !== undefined ? certificate.path : ''
+                  }
+                  alt={certificate.type}
+                />
+              </AspectRatio>
+            </Box>
+          ))}
         </ModalDialog>
       </Modal>
     </DashboardLayout>

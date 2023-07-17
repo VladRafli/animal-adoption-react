@@ -46,27 +46,26 @@ export default function Register() {
   )
 
   const handleSubmit = () => {
+    console.log(form)
     setAlert({ isOpen: false, message: '' })
     setSuccess({ isOpen: false, message: '' })
-    updateSubmitForm({ name: '', email: '', password: '' })
 
     if (form.password !== form.repassword) {
       setAlert({ isOpen: true, message: 'Password does not match' })
       return
     }
 
-    updateSubmitForm({
-      name: form.name,
-      email: form.email,
-      password: form.password,
-    })
-
     wretch(`${import.meta.env.VITE_API_URL}/v1/auth/register`)
       .options({
         headers: { 'Content-Type': 'application/json' },
         mode: 'cors',
       })
-      .post(submitForm)
+      .post({
+        name: form.name,
+        email: form.email,
+        password: form.password,
+        role: 'shelter',
+      })
       .badRequest((err) => {
         const { message } = err.json
         setAlert({ isOpen: true, message: JSON.stringify(message) })

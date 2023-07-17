@@ -7,4 +7,6 @@ export default interface AnimalInterface {
   breed: string
   description: string
   image: any
+  photos: any[]
+  certificates: any[]
 }
